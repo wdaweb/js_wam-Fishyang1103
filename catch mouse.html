@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    * {
+      margin: 0px;
+      border: 0px;
+      list-style: none;
+    }
+
+    html,
+    body {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+    }
+
+    .container {
+      height: 450px;
+      width: 620px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: url(./sweet-shop.jpeg) no-repeat center/cover;
+      background-size: auto;
+      position: relative;
+      /* cursor:url(檔案路徑) 滑鼠x座標 滑鼠y座標, auto */
+      cursor: url(./kitty.png) 50 50, auto;
+    }
+
+    /* 右上麵包櫃的老鼠區 */
+    .bread {
+      top: 30px;
+      right: 18px;
+      display: block;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 左下蛋糕區的老鼠區 */
+    .cake {
+      top: 137px;
+      left: -5px;
+      display: block;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+
+    /* 老鼠出現的位置 */
+    .hole {
+      background: url(./mouse2.png) no-repeat center/cover;
+      width: 50px;
+      height: 50px;
+      /* border: 1px solid black; */
+      background-position: center 100px;
+    }
+
+    /* 讓老鼠出現 */
+    .top {
+      background-position: center 0;
+      transition: 0.5s;
+    }
+
+    .content {
+      display: flex;
+      align-items: center;
+      position: absolute;
+      bottom: 75px;
+      left: 38px;
+      width: 550px;
+      /* 讓按鈕與文字均分 */
+      justify-content: space-between;
+    }
+
+    .btn {
+      bottom: 73px;
+      left: 38px;
+      display: inline-block;
+    }
+
+    .button {
+      display: inline-block;
+      font-size: 20px;
+      text-align: center;
+      width: 150px;
+      height: 50px;
+      border: 0;
+      background-color: rgb(204, 5, 52);
+      color: #fff;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: 4px;
+      text-indent: 4px;
+      box-shadow: 5px 5px 2px 1px rgba(76, 76, 76, 0.5);
+    }
+
+    .button span {
+      display: inline-block;
+      position: relative;
+      transition: 0.5s;
+    }
+
+    .button span:after {
+      content: '\00bb';
+      position: absolute;
+      opacity: 0;
+      top: 0;
+      right: 20px;
+      transition: 0.5s;
+    }
+
+    .button:hover span {
+      padding-right: 20px;
+    }
+
+    .button:hover span:after {
+      /* opacity 不透明度 */
+      opacity: 1;
+      right: 0;
+    }
+
+    .btnAnimation span {
+      padding-right: 20px;
+    }
+
+    .btnAnimation span:after {
+      /* opacity 不透明度 */
+      opacity: 1;
+      right: 0;
+    }
+
+    .context {
+      bottom: 180px;
+      left: 750px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="bread">
+      <table id="game">
+        <tr>
+          <td class="hole"></td>
+          <td class="hole"></td>
+          <td class="hole"></td>
+        </tr>
+        <tr>
+          <td class="hole"></td>
+          <td class="hole"></td>
+          <td class="hole"></td>
+        </tr>
+        <tr>
+          <td class="hole"></td>
+          <td class="hole"></td>
+          <td class="hole"></td>
+        </tr>
+      </table>
+    </div>
+    <div class="cake">
+      <table id="game2" style="border-spacing:20px">
+        <tr>
+          <td class="hole"></td>
+          <td class="hole"></td>
+          <td class="hole"></td>
+        </tr>
+        <tr>
+          <td class="hole"></td>
+          <td class="hole"></td>
+          <td class="hole"></td>
+        </tr>
+      </table>
+    </div>
+    <div class="content">
+      <div class="btn">
+        <!-- <input type="button" value="開始遊戲" id="start"> -->
+        <button class="button" id="start"><span>開始遊戲</span></button>
+      </div>
+      <div class="context">
+        目前分數：<span id="score">0</span>
+        <br>
+        最高分
+        <br>
+        玩家：<span id="highgame">喵星人</span>
+        &emsp;
+        分數：<span id="highscore">0</span>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    const holes = document.getElementsByClassName('hole')
+    const start = document.getElementById('start')
+    const scoreText = document.getElementById('score')
+    const highnameText = document.getElementById('highgame')
+    const highscoreText = document.getElementById('highscore')
+
+    //最高分
+    const high = { score: 0, name: '喵星人' }
+    //計分
+    let score = 0
+    //計時器
+    let timer = 0
+
+    const audio = new Audio()
+    //讀取資料
+    const storage = JSON.parse(localStorage.getItem('catch mouse'))
+    if (storage) {
+      high.name = storage.name
+      high.score = storage.score
+      //修改最高分顯示文字
+      highnameText.innerText = high.name
+      highscoreText.innerText = high.score
+    }
+
+    start.onclick = () => {
+      //停用開始按鈕
+      start.disabled = true
+      // 為了讓開始按鈕的動畫不見
+      start.classList.add('btnAnimation')
+      //重設分數
+      score = 0
+      scoreText.innerText = score
+      //每秒變換一次
+      timer = setInterval(game, 1000)
+      game()
+      //十秒後遊戲結束
+      setTimeout(end, 10 * 1000)
+    }
+
+    //老鼠出現
+    const game = () => {
+      //讓老鼠消失
+      for (const hole of holes) {
+        hole.classList.remove('top')
+      }
+      //隨機出現四隻老鼠且不重複
+      //holes.length - 1 因為是陣列要-1
+      for (let i = 0; i < 4; i++) {
+        let randNum = Math.round(Math.random() * (holes.length - 1))
+        if (holes[randNum].classList.contains('top')) {
+          i--
+        } else {
+          holes[randNum].classList.add('top')
+        }
+      }
+    }
+
+
+    //遊戲結束
+    const end = () => {
+      clearInterval(timer)
+      // 移除才能讓開始按鈕的動畫回來
+      start.classList.remove('btnAnimation')
+      //把老鼠清掉
+      for (const hole of holes) {
+        hole.classList.remove('top')
+      }
+      //啟用開始按鈕
+      start.disabled = false
+      //跳出訊息
+      alert(`遊戲結束，你得到 ${score}分`)
+      //紀錄最高分
+      if (score > high.score) {
+        audio.play()
+        //請玩家輸入名字
+        const input = prompt('最高分，請輸入名字')
+        //修改最高分變數資料
+        high.score = score
+        high.name = input || '喵星人'
+        //修改最高分顯示文字
+        highnameText.innerText = high.name
+        highscoreText.innerText = high.score
+        //保存
+        //localStorage.setItem(資料名,文字)
+        //變數轉文字JSON.stringify(變數)
+        localStorage.setItem('catch mouse', JSON.stringify(high))
+      }
+    }
+
+
+    for (const hole of holes) {
+      hole.onclick = () => {
+        // 如果有老鼠
+        if (hole.classList.contains('top')) {
+          //就移除老鼠
+          hole.classList.remove('top')
+          //加分
+          score++
+          scoreText.innerText = score
+        }
+      }
+    }
+  </script>
+</body>
+
+</html>
